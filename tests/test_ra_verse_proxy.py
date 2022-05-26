@@ -4,14 +4,12 @@
 """This module tests ra_verse_proxy."""
 # pylint: disable=unused-argument
 # pylint: disable=redefined-outer-name
-import json
 from typing import Callable
 from typing import Generator
 
 import pytest
 from fastapi.testclient import TestClient
 from httpx import Response
-from more_itertools import one
 from respx import MockRouter
 
 from ra_verse_proxy.main import create_app
@@ -28,7 +26,9 @@ def fire_graphql_query(
         graphql_query: dict[str, str],
         response: Response,
     ) -> Response:
-        mo_route = respx_mock.post("/graphql").mock(return_value=response)
+        mo_route = respx_mock.post("/graphql", json=graphql_query).mock(
+            return_value=response
+        )
 
         app = create_app()
         client = TestClient(app)
@@ -37,9 +37,6 @@ def fire_graphql_query(
             json=graphql_query,
         )
         mo_route.calls.assert_called_once()
-        call = one(mo_route.calls)
-        binary_graphql_query = json.dumps(graphql_query).encode("ascii")
-        assert call.request.content == binary_graphql_query
         return response
 
     yield inner
