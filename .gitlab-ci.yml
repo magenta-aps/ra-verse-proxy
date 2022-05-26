@@ -1,0 +1,105 @@
+# SPDX-FileCopyrightText: 2022 Magenta ApS
+# SPDX-License-Identifier: MPL-2.0
+
+stages:
+  - lint
+  - build
+  - test
+  - coverage
+  - release
+
+
+variables:
+  ENGINE_IMAGE_SHA: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
+  POINT_IMAGE_SHA: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
+
+  ENGINE_RELEASE_REGISTRY_IMAGE: index.docker.io/magentaaps/ra-verse-proxy-engine
+  POINT_RELEASE_REGISTRY_IMAGE: index.docker.io/magentaaps/ra-verse-proxy-point
+
+  PYTEST_COV_MODULE: ra-verse-proxy
+  PYTEST_COV_FAIL_UNDER: 100
+
+  PRECOMMIT_USE_POETRY: "true"
+
+
+# Conditions
+#############
+.if-default-branch-refs: &if-default-branch-refs
+  if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+.if-tag: &if-tag
+  if: '$CI_COMMIT_TAG'
+
+.if-merge-request: &if-merge-request
+  if: '$CI_MERGE_REQUEST_IID'
+
+# Workflow
+###########
+workflow:
+  rules:
+    - <<: *if-tag
+    - <<: *if-default-branch-refs
+    - <<: *if-merge-request
+
+
+include:
+  - project: labs/salt-automation
+    ref: master
+    file: /gitlab-ci-templates/common/autopub.v1.yml
+  - project: labs/salt-automation
+    ref: master
+    file: gitlab-ci-templates/python/pytest.v1.yml
+  - project: labs/salt-automation
+    ref: master
+    file: /gitlab-ci-templates/common/docker-release-meta.v1.yml
+  - project: labs/salt-automation
+    ref: master
+    file: /gitlab-ci-templates/common/docker-build-meta.v1.yml
+  - project: labs/salt-automation
+    ref: master
+    file: /gitlab-ci-templates/common/pre-commit.v1.yml
+
+
+# Build
+########
+
+Build Point:
+  extends: .build-docker
+  variables:
+    CI_IMAGE: ${POINT_IMAGE_SHA}
+    DOCKERFILE: docker/point.Dockerfile
+    BUILD_DOCKER_EXTRA_FLAGS: "--build-arg=COMMIT_SHA=${CI_COMMIT_SHA} --build-arg=COMMIT_TAG=${CI_COMMIT_TAG}"
+
+Build Engine:
+  extends: .build-docker
+  variables:
+    CI_IMAGE: ${ENGINE_IMAGE_SHA}
+    DOCKERFILE: docker/engine.Dockerfile
+    BUILD_DOCKER_EXTRA_FLAGS: "--build-arg=COMMIT_SHA=${CI_COMMIT_SHA} --build-arg=COMMIT_TAG=${CI_COMMIT_TAG}"
+
+# Release
+#########
+
+Release Point master:
+  variables:
+    CI_IMAGE: ${POINT_IMAGE_SHA}
+    RELEASE_IMAGE: ${POINT_RELEASE_REGISTRY_IMAGE}
+  extends: .release-master
+
+Release Point version:
+  variables:
+    CI_IMAGE: ${POINT_IMAGE_SHA}
+    RELEASE_IMAGE: ${POINT_RELEASE_REGISTRY_IMAGE}
+  extends: .release-version
+
+Release Engine master:
+  variables:
+    CI_IMAGE: ${ENGINE_IMAGE_SHA}
+    RELEASE_IMAGE: ${ENGINE_RELEASE_REGISTRY_IMAGE}
+  extends: .release-master
+
+Release Engine version:
+  variables:
+    CI_IMAGE: ${ENGINE_IMAGE_SHA}
+    RELEASE_IMAGE: ${ENGINE_RELEASE_REGISTRY_IMAGE}
+  extends: .release-version

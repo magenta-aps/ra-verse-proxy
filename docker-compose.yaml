@@ -1,0 +1,41 @@
+# SPDX-FileCopyrightText: Magenta ApS
+#
+# SPDX-License-Identifier: MPL-2.0
+version: "3.9"
+services:
+  point:
+    build:
+      context: .
+      dockerfile: docker/point.Dockerfile
+    environment:
+      enable_graphiql: "true"
+    command: ["uvicorn", "--factory", "app.main:create_app", "--host", "0.0.0.0", "--reload"]
+    ports:
+      - 8000:8000/tcp
+    volumes:
+      - ./ra_verse_proxy:/app/
+    networks:
+      - ra_verse_proxy
+
+  engine:
+    build:
+      context: .
+      dockerfile: docker/engine.Dockerfile
+    command: ["watchmedo", "auto-restart", "--directory=/app/", "--pattern=*.py", "--recursive", "--", "celery", "-A", "app.server", "worker", "--loglevel=INFO" ]
+    environment:
+      MO_URL: "http://mo"
+    volumes:
+      - ./ra_verse_proxy:/app/
+    networks:
+      - ra_verse_proxy
+      - os2mo_default
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    networks:
+      - ra_verse_proxy
+
+networks:
+  ra_verse_proxy:
+  os2mo_default:
+    external: true
