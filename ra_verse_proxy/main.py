@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 """Uvicorn entrypoint."""
-from asgiref.sync import sync_to_async
+from fastapi import Body
 from fastapi import FastAPI
 from fastapi import HTTPException
 from fastapi import Request
@@ -38,7 +38,10 @@ def create_app() -> FastAPI:
         "/graphql",
         response_class=JSONResponse,
     )
-    async def graphql_proxy(request: Request) -> JSONResponse:
+    def graphql_proxy(
+        request: Request,
+        payload: dict = Body(...),
+    ) -> JSONResponse:
         """Proxy GraphQL Post.
 
         Args:
@@ -48,16 +51,11 @@ def create_app() -> FastAPI:
             Result of running the GraphQL query on MO.
         """
         # Extract POST payload and relevant headers
-        payload = await request.json()
-        found_headers = settings.header_whitelist.intersection(
-            request.headers.keys()
-        )
+        found_headers = settings.header_whitelist.intersection(request.headers.keys())
         headers = {key: request.headers[key] for key in found_headers}
         # Send Payload and Headers to remote worker, and await response.
         async_result = send_http_call.delay(payload, headers)
-        status_code, result = await sync_to_async(
-            async_result.get, thread_sensitive=True
-        )()
+        status_code, result = async_result.get()
         if status_code != 200:
             raise HTTPException(status_code=status_code, detail=result)
         return JSONResponse(result)

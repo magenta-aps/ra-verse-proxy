@@ -19,7 +19,6 @@ fastapi = "^0.78.0"
 pydantic = "^1.9.1"
 strawberry-graphql = "^0.113.0"
 httpx = "^0.23.0"
-asgiref = "^3.5.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
