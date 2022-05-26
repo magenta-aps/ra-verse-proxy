@@ -5,7 +5,7 @@ SPDX-License-Identifier: MPL-2.0
 
 # AMQP Reverse Proxy (GIR Integration Point and Engine)
 
-BESKRIVELSE
+GraphQL (HTTP) over AMQP Proxy, which serves to invert the traffic flow.
 
 ## Usage
 
