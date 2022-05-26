@@ -34,7 +34,7 @@ def send_http_call(
         GraphQL JSON response.
     """
     response = httpx.post(
-        get_settings().mo_url + "/graphql",
+        settings.mo_url + "/graphql",
         json=payload,
         headers=headers,
     )
