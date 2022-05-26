@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MPL-2.0
 [tool.poetry]
 name = "ra-verse-proxy"
-version = "0.1.0"
+version = "0.2.0"
 description = "AMQP Reverse Proxy (GIR Integration Point and Engine)"
 authors = ["Magenta ApS <info@magenta.dk>"]
 license = "MPL-2.0"
