@@ -50,7 +50,7 @@ def create_app() -> FastAPI:
         # Extract POST payload and relevant headers
         payload = await request.json()
         found_headers = settings.header_whitelist.intersection(
-            set(request.headers.keys())
+            request.headers.keys()
         )
         headers = {key: request.headers[key] for key in found_headers}
         # Send Payload and Headers to remote worker, and await response.
