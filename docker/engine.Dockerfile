@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir poetry==1.1.13
 
 WORKDIR /opt
 COPY poetry.lock pyproject.toml ./
-RUN poetry install # --no-dev
+RUN poetry install --no-interaction
 
 WORKDIR /app
 COPY ra_verse_proxy .
