@@ -49,11 +49,10 @@ def create_app() -> FastAPI:
         """
         # Extract POST payload and relevant headers
         payload = await request.json()
-        headers = {
-            key: value
-            for key, value in request.headers.items()
-            if key in settings.header_whitelist
-        }
+        found_headers = settings.header_whitelist.intersection(
+            set(request.headers.keys())
+        )
+        headers = {key: request.headers[key] for key in found_headers}
         # Send Payload and Headers to remote worker, and await response.
         async_result = send_http_call.delay(payload, headers)
         status_code, result = await sync_to_async(
