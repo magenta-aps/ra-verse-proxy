@@ -11,7 +11,7 @@ services:
       enable_graphiql: "true"
     command: ["uvicorn", "--factory", "app.main:create_app", "--host", "0.0.0.0", "--reload"]
     ports:
-      - 8000:8000/tcp
+      - 127.0.0.1:8000:8000
     volumes:
       - ./ra_verse_proxy:/app/
     networks:
