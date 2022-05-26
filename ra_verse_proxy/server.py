@@ -19,7 +19,9 @@ app = Celery(
 
 
 @app.task
-def send_http_call(payload: dict[str, Any], headers: dict[str, Any]) -> dict[str, Any]:
+def send_http_call(
+    payload: dict[str, Any], headers: dict[str, Any]
+) -> tuple[int, dict[str, Any]]:
     """HTTP call worker.
 
     Calls /graphql on OS2mo.
@@ -36,4 +38,4 @@ def send_http_call(payload: dict[str, Any], headers: dict[str, Any]) -> dict[str
         json=payload,
         headers=headers,
     )
-    return cast(dict[str, Any], response.json())
+    return (response.status_code, cast(dict[str, Any], response.json()))

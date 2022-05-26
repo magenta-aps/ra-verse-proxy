@@ -2,13 +2,12 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 """Uvicorn entrypoint."""
-from typing import Any
-from typing import cast
-
 from asgiref.sync import sync_to_async
 from fastapi import FastAPI
+from fastapi import HTTPException
 from fastapi import Request
 from fastapi.responses import HTMLResponse
+from fastapi.responses import JSONResponse
 from strawberry.asgi.utils import get_graphiql_html
 
 from .config import get_settings
@@ -22,7 +21,10 @@ def create_app() -> FastAPI:
 
     if settings.enable_graphiql:
 
-        @app.get("/graphql")
+        @app.get(
+            "/graphql",
+            response_class=HTMLResponse,
+        )
         async def serve_graphiql() -> HTMLResponse:
             """Serve GraphiQL.
 
@@ -32,8 +34,11 @@ def create_app() -> FastAPI:
             html = get_graphiql_html()
             return HTMLResponse(html)
 
-    @app.post("/graphql")
-    async def graphql_proxy(request: Request) -> dict[str, Any]:
+    @app.post(
+        "/graphql",
+        response_class=JSONResponse,
+    )
+    async def graphql_proxy(request: Request) -> JSONResponse:
         """Proxy GraphQL Post.
 
         Args:
@@ -51,7 +56,11 @@ def create_app() -> FastAPI:
         }
         # Send Payload and Headers to remote worker, and await response.
         async_result = send_http_call.delay(payload, headers)
-        result = await sync_to_async(async_result.get, thread_sensitive=True)()
-        return cast(dict[str, Any], result)
+        status_code, result = await sync_to_async(
+            async_result.get, thread_sensitive=True
+        )()
+        if status_code != 200:
+            raise HTTPException(status_code=status_code, detail=result)
+        return JSONResponse(result)
 
     return app
