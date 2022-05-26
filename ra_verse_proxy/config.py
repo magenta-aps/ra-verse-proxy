@@ -22,7 +22,7 @@ class Settings(BaseSettings):
         description="Whether to serve GraphiQL",
     )
     header_whitelist: set[str] = Field(
-        set(["authorization"]), description="List of HTTP headers to forward."
+        {"authorization"}, description="List of HTTP headers to forward."
     )
 
     amqp_url: AmqpDsn = Field(
