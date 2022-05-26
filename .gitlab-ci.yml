@@ -16,7 +16,7 @@ variables:
   ENGINE_RELEASE_REGISTRY_IMAGE: index.docker.io/magentaaps/ra-verse-proxy-engine
   POINT_RELEASE_REGISTRY_IMAGE: index.docker.io/magentaaps/ra-verse-proxy-point
 
-  PYTEST_COV_MODULE: ra-verse-proxy
+  PYTEST_COV_MODULE: ra_verse_proxy
   PYTEST_COV_FAIL_UNDER: 100
 
   PRECOMMIT_USE_POETRY: "true"
