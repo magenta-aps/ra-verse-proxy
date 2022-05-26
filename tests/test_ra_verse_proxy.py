@@ -70,3 +70,17 @@ def test_bad_response_from_mo(fire_graphql_query: Callable[..., Response]) -> No
     response = fire_graphql_query(graphql_query, mo_response)
     assert response.status_code == 500
     assert response.json() == {"detail": error_message}
+
+
+def test_graphiql_can_be_enabled() -> None:
+    """Test that we can enable and serve GraphiQL."""
+    app = create_app(enable_graphiql=False)
+    client = TestClient(app)
+    response = client.get("/graphql")
+    assert response.status_code == 405
+
+    app = create_app(enable_graphiql=True)
+    client = TestClient(app)
+    response = client.get("/graphql")
+    assert response.status_code == 200
+    assert "<title>Strawberry GraphiQL</title>" in response.text

@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 """Uvicorn entrypoint."""
+from typing import Any
+
 from fastapi import Body
 from fastapi import FastAPI
 from fastapi import HTTPException
@@ -14,10 +16,10 @@ from .config import get_settings
 from .server import send_http_call
 
 
-def create_app() -> FastAPI:
+def create_app(*args: Any, **kwargs: Any) -> FastAPI:
     """FastAPI application factory."""
     app = FastAPI()
-    settings = get_settings()
+    settings = get_settings(*args, **kwargs)
 
     if settings.enable_graphiql:
 
